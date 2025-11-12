@@ -1,4 +1,4 @@
-# mono_flutter
+# mono_connect_sdk
 
 [![pub package](https://img.shields.io/badge/Pub-1.0.0-green.svg)](https://pub.dartlang.org/packages/mono_flutter)
 

@@ -13,7 +13,7 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   webview_flutter: ^4.10.0
-  js: ^0.7.1
+  js: ^0.6.3
   permission_handler: ^11.3.1
   webview_flutter_wkwebview: ^3.17.0
 
