@@ -5,8 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mono_flutter/extensions/map.dart';
-import 'package:mono_flutter/models/models.dart';
+import 'package:mono_connect_sdk/src/core/extensions/map.dart';
+import 'package:mono_connect_sdk/src/enums/mono_event.dart';
+import 'package:mono_connect_sdk/src/models/models.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
@@ -17,6 +18,7 @@ const String version = '2023-12-14';
 const darkMode =
     'document.head.appendChild(document.createElement("style")).innerHTML="html { filter: invert(.95) hue-rotate(180deg) }"';
 
+@Deprecated("Use MonoConnectView instead")
 class MonoWebView extends StatefulWidget {
   /// Public API key gotten from your mono dashboard
   final String apiKey, reAuthCode;
@@ -82,9 +84,7 @@ class MonoWebViewState extends State<MonoWebView> {
 
     late final PlatformWebViewControllerCreationParams params;
     params = WebViewPlatform.instance is WebKitWebViewPlatform
-        ? WebKitWebViewControllerCreationParams(
-            allowsInlineMediaPlayback: true,
-          )
+        ? WebKitWebViewControllerCreationParams(allowsInlineMediaPlayback: true)
         : const PlatformWebViewControllerCreationParams();
 
     _webViewController = WebViewController.fromPlatformCreationParams(
@@ -98,34 +98,36 @@ class MonoWebViewState extends State<MonoWebView> {
         'MonoClientInterface',
         onMessageReceived: _monoJavascriptChannel,
       )
-      ..setNavigationDelegate(NavigationDelegate(
-        onProgress: (int progress) {
-          // Update loading bar.
-        },
-        onPageStarted: (String url) {
-          setState(() {
-            isLoading.value = true;
-            hasError.value = false;
-          });
-        },
-        onPageFinished: (String url) {
-          setState(() {
-            isLoading.value = false;
-          });
-          if (Theme.of(context).brightness == Brightness.dark) {
-            _webViewController.runJavaScript(darkMode);
-          }
-        },
-        onWebResourceError: (WebResourceError error) {
-          setState(() {
-            isLoading.value = false;
-            hasError.value = true;
-          });
-        },
-        onNavigationRequest: (NavigationRequest request) {
-          return NavigationDecision.navigate;
-        },
-      ));
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            // Update loading bar.
+          },
+          onPageStarted: (String url) {
+            setState(() {
+              isLoading.value = true;
+              hasError.value = false;
+            });
+          },
+          onPageFinished: (String url) {
+            setState(() {
+              isLoading.value = false;
+            });
+            if (Theme.of(context).brightness == Brightness.dark) {
+              _webViewController.runJavaScript(darkMode);
+            }
+          },
+          onWebResourceError: (WebResourceError error) {
+            setState(() {
+              isLoading.value = false;
+              hasError.value = true;
+            });
+          },
+          onNavigationRequest: (NavigationRequest request) {
+            return NavigationDecision.navigate;
+          },
+        ),
+      );
 
     confirmPermissionsAndLoad();
   }
@@ -150,15 +152,15 @@ class MonoWebViewState extends State<MonoWebView> {
                     controller: _webViewController,
                     gestureRecognizers:
                         <Factory<OneSequenceGestureRecognizer>>{}..add(
-                            Factory<TapGestureRecognizer>(
-                              () => TapGestureRecognizer()
-                                ..onTapDown = (tap) {
-                                  SystemChannels.textInput.invokeMethod(
-                                    'TextInput.hide',
-                                  ); //This will hide keyboard on tapdown
-                                },
-                            ),
+                          Factory<TapGestureRecognizer>(
+                            () => TapGestureRecognizer()
+                              ..onTapDown = (tap) {
+                                SystemChannels.textInput.invokeMethod(
+                                  'TextInput.hide',
+                                ); //This will hide keyboard on tapdown
+                              },
                           ),
+                        ),
                   ),
                 ),
                 ValueListenableBuilder<bool>(
@@ -178,7 +180,7 @@ class MonoWebViewState extends State<MonoWebView> {
                     }
                     return const SizedBox();
                   },
-                )
+                ),
               ],
             ),
           ),
@@ -189,25 +191,30 @@ class MonoWebViewState extends State<MonoWebView> {
 
   /// A default overlay widget to display over webview if page fails to load
   Widget get _error => Container(
-      alignment: Alignment.center,
-      color: Colors.white,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-                child: const Text('Reload'),
-                onPressed: () {
-                  _webViewController.reload();
-                }),
+    alignment: Alignment.center,
+    color: Colors.white,
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton(
+            child: const Text('Reload'),
+            onPressed: () {
+              _webViewController.reload();
+            },
           ),
-          const Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Text('Sorry An error occurred could not connect with Mono',
-                  textAlign: TextAlign.center)),
-        ],
-      ));
+        ),
+        const Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Text(
+            'Sorry An error occurred could not connect with Mono',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    ),
+  );
 
   Future<void> confirmPermissionsAndLoad() async {
     bool isCameraGranted;
@@ -308,7 +315,7 @@ class MonoWebViewState extends State<MonoWebView> {
           break;
 
         default:
-          final event = MonoEvent.unknown.fromString(key.split('.').last);
+          final event = MonoEventExtension.fromString(key.split('.').last);
           if (widget.onEvent != null) {
             widget.onEvent!(event, MonoEventData.fromJson(body.getKey('data')));
           }

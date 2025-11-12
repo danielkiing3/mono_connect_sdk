@@ -9,7 +9,7 @@ import 'dart:js_util';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'package:mono_flutter/mono.dart';
+import 'package:mono_connect_sdk/src/widgets/mono_web/mono_js.dart';
 
 /// A web implementation of the MonoFlutter plugin.
 class MonoFlutterWeb {
@@ -22,7 +22,8 @@ class MonoFlutterWeb {
 
     final pluginInstance = MonoFlutterWeb();
     channel.setMethodCallHandler(
-        (call) => pluginInstance.handleMethodCall(call, channel));
+      (call) => pluginInstance.handleMethodCall(call, channel),
+    );
     // channel.invokeMethod('onLoad', {});
   }
 
@@ -30,7 +31,9 @@ class MonoFlutterWeb {
   /// Note: Check the "federated" architecture for a new way of doing this:
   /// https://flutter.dev/go/federated-plugins
   Future<dynamic> handleMethodCall(
-      MethodCall call, MethodChannel channel) async {
+    MethodCall call,
+    MethodChannel channel,
+  ) async {
     // final MethodChannel channel = MethodChannel('com.wiseminds.mono_flutter', );
     switch (call.method) {
       case 'setup':
@@ -42,8 +45,10 @@ class MonoFlutterWeb {
         }
         onEvent(eventName, data) {
           // print('$eventName, ${jsonEncode(jsToMap(data))}');
-          channel.invokeMethod('onEvent',
-              {'eventName': eventName, 'data': jsonEncode(jsToMap(data))});
+          channel.invokeMethod('onEvent', {
+            'eventName': eventName,
+            'data': jsonEncode(jsToMap(data)),
+          });
         }
         onSuccess(data) {
           channel.invokeMethod('onSuccess', jsonEncode(jsToMap(data)));
@@ -55,11 +60,12 @@ class MonoFlutterWeb {
         setProperty(html.window, 'onSuccess', allowInterop(onSuccess));
 
         setupMonoConnect(
-            call.arguments['key'] as String,
-            call.arguments['reference'] as String?,
-            call.arguments['data'] as String?,
-            call.arguments['authCode'] as String?,
-            call.arguments['scope'] as String? ?? "auth");
+          call.arguments['key'] as String,
+          call.arguments['reference'] as String?,
+          call.arguments['data'] as String?,
+          call.arguments['authCode'] as String?,
+          call.arguments['scope'] as String? ?? "auth",
+        );
         return;
       case 'open':
         return open();

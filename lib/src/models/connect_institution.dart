@@ -1,36 +1,14 @@
 import 'dart:convert';
 
-import 'package:mono_flutter/extensions/iterable.dart';
-
-enum ConnectAuthMethod {
-  internetBanking("internet_banking"),
-  mobileBanking("mobile_banking");
-
-  final String value;
-
-  const ConnectAuthMethod(this.value);
-
-  static ConnectAuthMethod fromValue(String value) {
-    final type =
-        ConnectAuthMethod.values.firstWhereOrNull((e) => e.value == value);
-
-    return type ?? ConnectAuthMethod.internetBanking;
-  }
-}
+import 'package:mono_connect_sdk/src/enums/connect_auth_method.dart';
 
 class ConnectInstitution {
   final String id;
   final ConnectAuthMethod authMethod;
 
-  const ConnectInstitution({
-    required this.id,
-    required this.authMethod,
-  });
+  const ConnectInstitution({required this.id, required this.authMethod});
 
-  ConnectInstitution copyWith({
-    String? id,
-    ConnectAuthMethod? authMethod,
-  }) {
+  ConnectInstitution copyWith({String? id, ConnectAuthMethod? authMethod}) {
     return ConnectInstitution(
       id: id ?? this.id,
       authMethod: authMethod ?? this.authMethod,
@@ -38,10 +16,7 @@ class ConnectInstitution {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'auth_method': authMethod.value,
-    };
+    return {'id': id, 'auth_method': authMethod.value};
   }
 
   factory ConnectInstitution.fromMap(Map<String, dynamic> map) {

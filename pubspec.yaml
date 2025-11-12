@@ -1,11 +1,11 @@
-name: mono_flutter
+name: mono_connect_sdk
 description: A Flutter plugin integrating the official android and ios SDK for Mono https://withmono.com
 version: 4.0.4
 homepage: https://github.com/wiseminds/mono-flutter
 
 environment:
-  sdk: ">=2.19.0 <4.0.0"
-  flutter: ">=2.0.0"
+  sdk: ^3.8.0
+  flutter: ">=3.0.0"
 
 dependencies:
   flutter:
@@ -30,7 +30,3 @@ flutter:
       web:
         pluginClass: MonoFlutterWeb
         fileName: mono_flutter_web.dart
-      # ios:
-      #   default_package: webview_flutter
-      # android:
-      #   default_package: webview_flutter

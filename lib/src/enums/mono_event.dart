@@ -1,6 +1,4 @@
-/// events corresponding to mono events
-library;
-
+/// Event corresponding to mono events
 enum MonoEvent {
   /// [OPENED] Triggered when the user opens the Connect Widget.
   opened,
@@ -33,9 +31,9 @@ enum MonoEvent {
   unknown,
 }
 
-extension M on MonoEvent {
+extension MonoEventExtension on MonoEvent {
   /// convert a string value to a Mono event
-  MonoEvent fromString(String value) {
+  static MonoEvent fromString(String value) {
     switch (value.toUpperCase()) {
       case 'INSTITUTION_SELECTED':
         return MonoEvent.institutionSelected;
@@ -50,8 +48,9 @@ extension M on MonoEvent {
 
       default:
     }
-    final event =
-        MonoEvent.values.where((e) => e.name == value.toLowerCase()).toList();
+    final List<MonoEvent> event = MonoEvent.values
+        .where((e) => e.name == value.toLowerCase())
+        .toList();
 
     return event.isNotEmpty ? event[0] : MonoEvent.unknown;
   }
