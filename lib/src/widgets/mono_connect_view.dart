@@ -45,8 +45,8 @@ class MonoConnectView extends StatefulWidget {
   final MonoConnectConfig config;
   final MonoConnectCallbacks? callbacks;
 
-  /// Custom error widget to display on load failure
-  final Widget? errorWidget;
+  /// Custom error widget builder that receives a retry callback
+  final Widget Function(VoidCallback onRetry)? errorWidgetBuilder;
 
   /// Custom loading widget to display while page loads
   final Widget? loadingWidget;
@@ -58,7 +58,7 @@ class MonoConnectView extends StatefulWidget {
     super.key,
     required this.config,
     this.callbacks,
-    this.errorWidget,
+    this.errorWidgetBuilder,
     this.loadingWidget,
     this.logger,
   });
@@ -76,7 +76,7 @@ class MonoConnectView extends StatefulWidget {
     ValueChanged<String?>? onClosed,
     VoidCallback? onLoad,
     MonoOnEvent? onEvent,
-    Widget? errorWidget,
+    Widget Function(VoidCallback onRetry)? errorWidgetBuilder,
     Widget? loadingWidget,
     MonoLogger? logger,
   }) {
@@ -96,7 +96,7 @@ class MonoConnectView extends StatefulWidget {
         onLoad: onLoad,
         onEvent: onEvent,
       ),
-      errorWidget: errorWidget,
+      errorWidgetBuilder: errorWidgetBuilder,
       loadingWidget: loadingWidget,
       logger: logger,
     );
@@ -326,6 +326,12 @@ class MonoConnectViewState extends State<MonoConnectView> {
     Navigator.of(context).pop(result);
   }
 
+  void _retryConnection() {
+    _logger.info('Retrying connection');
+    _hasError.value = false;
+    _webViewController.reload();
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -360,12 +366,11 @@ class MonoConnectViewState extends State<MonoConnectView> {
                   builder: (_, hasError, _) {
                     if (!hasError) return const SizedBox.shrink();
 
-                    return widget.errorWidget ??
-                        _DefaultErrorWidget(
-                          onReload: () {
-                            _webViewController.reload();
-                          },
-                        );
+                    if (widget.errorWidgetBuilder != null) {
+                      return widget.errorWidgetBuilder!(_retryConnection);
+                    }
+
+                    return _DefaultErrorWidget(onReload: _retryConnection);
                   },
                 ),
               ],
@@ -379,7 +384,7 @@ class MonoConnectViewState extends State<MonoConnectView> {
   /// Configure gesture recognizers for better touch handling
   Set<Factory<OneSequenceGestureRecognizer>> _buildGestureRecognizers() {
     return {
-      // Factory<EagerGestureRecognizer>(() => EagerGestureRecognizer()),
+      Factory<EagerGestureRecognizer>(() => EagerGestureRecognizer()),
       Factory<TapGestureRecognizer>(
         () => TapGestureRecognizer()..onTapDown = (_) => _dismissKeyboard(),
       ),
