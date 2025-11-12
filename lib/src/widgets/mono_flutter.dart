@@ -89,7 +89,7 @@ class MonoFlutter {
     ValueChanged<String>? onSuccess,
     MonoLogger? logger,
     Widget? loadingWidget,
-    Widget? errorWidget,
+    Widget Function(VoidCallback onRetry)? errorWidgetBuilder,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -111,7 +111,7 @@ class MonoFlutter {
           reference: reference,
           logger: logger,
           loadingWidget: loadingWidget,
-          errorWidget: errorWidget,
+          errorWidgetBuilder: errorWidgetBuilder,
         );
       },
     );
@@ -132,7 +132,7 @@ class MonoFlutter {
     ValueChanged<String>? onSuccess,
     MonoLogger? logger,
     Widget? loadingWidget,
-    Widget? errorWidget,
+    Widget Function(VoidCallback onRetry)? errorWidgetBuilder,
   }) {
     return showModalBottomSheet<String>(
       context: context,
@@ -169,7 +169,7 @@ class MonoFlutter {
                   reference: reference,
                   logger: logger,
                   loadingWidget: loadingWidget,
-                  errorWidget: errorWidget,
+                  errorWidgetBuilder: errorWidgetBuilder,
                 ),
               ),
             ],
